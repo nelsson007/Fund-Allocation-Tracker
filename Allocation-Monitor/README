@@ -1,0 +1,163 @@
+# Fund Allocation Tracker Smart Contract
+
+A comprehensive Clarity smart contract for managing fund allocations, budgets, and spending tracking on the Stacks blockchain.
+
+## Overview
+
+This smart contract provides a complete solution for organizations to manage their funds through a structured allocation system. It supports category-based budgeting, role-based permissions, and detailed spending tracking with block height timestamps.
+
+## Features
+
+### Core Functionality
+- **Fund Management**: Initialize and add funds to the contract
+- **Category Budgets**: Create and manage spending categories with individual budgets
+- **Allocations**: Create specific allocations within categories
+- **Spending Tracking**: Record and track all spending with detailed records
+- **Block Height Tracking**: All transactions are timestamped with Stacks block heights
+
+### Access Control
+- **Owner Controls**: Contract owner has full administrative privileges
+- **Role-Based Permissions**: Granular permissions for different user roles
+  - `can-allocate`: Permission to create new allocations
+  - `can-spend`: Permission to spend from allocations
+  - `can-manage-categories`: Permission to create and manage categories
+
+### Emergency Controls
+- **Pause/Resume**: Contract can be paused in emergency situations
+- **Allocation Deactivation**: Individual allocations can be deactivated
+
+## Contract Structure
+
+### Data Variables
+- `total-fund`: Total available funds in the contract
+- `next-allocation-id`: Counter for allocation IDs
+- `next-record-id`: Counter for spending record IDs
+- `contract-active`: Contract active/paused state
+
+### Data Maps
+- `allocations`: Stores allocation details with block height timestamps
+- `category-budgets`: Manages category budgets and spending limits
+- `user-permissions`: Stores user access permissions
+- `spending-records`: Detailed spending records with block height timestamps
+
+## Functions
+
+### Public Functions (Write Operations)
+
+#### Administrative Functions
+- `initialize-fund(amount)`: Initialize contract with initial fund amount
+- `add-funds(amount)`: Add additional funds to the contract
+- `set-user-permissions(user, can-allocate, can-spend, can-manage)`: Set user permissions
+- `pause-contract()`: Pause all contract operations
+- `resume-contract()`: Resume contract operations
+
+#### Category Management
+- `create-category(category, budget, manager)`: Create a new spending category
+- `update-category-budget(category, new-budget)`: Update category budget
+
+#### Allocation Management
+- `create-allocation(category, amount)`: Create a new allocation within a category
+- `spend-from-allocation(allocation-id, amount, description)`: Spend from an allocation
+- `deactivate-allocation(allocation-id)`: Deactivate an allocation
+
+### Read-Only Functions (Query Operations)
+
+#### Fund Information
+- `get-total-fund()`: Get total available funds
+- `get-contract-status()`: Get complete contract status
+
+#### Allocation Information
+- `get-allocation(allocation-id)`: Get allocation details
+- `get-allocation-balance(allocation-id)`: Get remaining balance for an allocation
+
+#### Category Information
+- `get-category-budget(category)`: Get category budget details
+- `get-category-remaining-budget(category)`: Get remaining budget for a category
+
+#### User and Record Information
+- `get-user-permissions(user)`: Get user permission settings
+- `get-spending-record(record-id)`: Get spending record details
+
+## Error Codes
+
+- `u100`: Owner only operation
+- `u101`: Resource not found
+- `u102`: Insufficient funds
+- `u103`: Invalid amount
+- `u104`: Allocation already exists
+- `u105`: Budget exceeded
+- `u106`: Invalid category
+- `u107`: Already initialized
+- `u108`: Category update failed
+- `u109`: Spending update failed
+
+## Usage Examples
+
+### 1. Initial Setup
+```clarity
+;; Initialize contract with 1,000,000 microSTX
+(contract-call? .fund-allocation initialize-fund u1000000)
+
+;; Create a marketing category with 100,000 microSTX budget
+(contract-call? .fund-allocation create-category "marketing" u100000 'SP1234...)
+
+;; Set user permissions
+(contract-call? .fund-allocation set-user-permissions 'SP5678... true true false)
+```
+
+### 2. Creating Allocations
+```clarity
+;; Create allocation for marketing campaign
+(contract-call? .fund-allocation create-allocation "marketing" u25000)
+```
+
+### 3. Recording Spending
+```clarity
+;; Spend from allocation
+(contract-call? .fund-allocation spend-from-allocation u1 u5000 "Social media ads")
+```
+
+### 4. Querying Information
+```clarity
+;; Check allocation balance
+(contract-call? .fund-allocation get-allocation-balance u1)
+
+;; Check category remaining budget
+(contract-call? .fund-allocation get-category-remaining-budget "marketing")
+```
+
+## Block Height Tracking
+
+The contract automatically records Stacks block heights for:
+- **Allocation Creation**: `created-at` field stores the block height when allocation is created
+- **Spending Records**: `spent-at` field stores the block height when spending occurs
+
+This provides immutable timestamps for all financial activities and enables:
+- Audit trails with precise timing
+- Historical analysis of spending patterns
+- Compliance reporting with blockchain-verified timestamps
+
+## Security Features
+
+### Access Control
+- Contract owner verification for administrative functions
+- Role-based permissions for operational functions
+- Category manager assignment for budget oversight
+
+### Fund Protection
+- Insufficient funds checks prevent overspending
+- Budget limits prevent category overspending
+- Allocation deactivation for emergency stops
+
+### Data Integrity
+- Immutable spending records
+- Block height timestamps for audit trails
+- Consistent state updates across all operations
+
+## Deployment
+
+1. Deploy the contract to Stacks blockchain
+2. Initialize with `initialize-fund`
+3. Create categories with `create-category`
+4. Set user permissions with `set-user-permissions`
+5. Begin normal operations
